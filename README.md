@@ -1,140 +1,118 @@
 # Invoice Processing Application with Gemini Vision AI
 
-A modern web application for processing and analyzing invoices using Google's Gemini Vision AI. The application supports RTL (Right-to-Left) text and is optimized for Hebrew invoices.
-
-## Deployment to Vercel
-
-### Prerequisites
-
-- Vercel account
-- Google Cloud account with Gemini API access
-- Git repository
-
-### Environment Variables Setup
-
-1. In Vercel project settings, add these environment variables:
-   ```
-   GOOGLE_API_KEY=your-gemini-api-key
-   MAX_FILE_SIZE=16777216
-   ALLOWED_EXTENSIONS=png,jpg,jpeg
-   PYTHONUNBUFFERED=1
-   PYTHON_VERSION=3.9
-   UPLOAD_FOLDER=/tmp/uploads
-   FLASK_ENV=production
-   FLASK_DEBUG=0
-   ```
-
-### Deployment Steps
-
-1. Install Vercel CLI:
-
-   ```bash
-   npm i -g vercel
-   ```
-
-2. Login to Vercel:
-
-   ```bash
-   vercel login
-   ```
-
-3. Deploy:
-   ```bash
-   vercel --prod
-   ```
-
-### Post-Deployment Checks
-
-1. Verify environment variables are set correctly
-2. Test file upload functionality
-3. Verify Gemini API integration
-4. Check invoice processing workflow
-5. Verify RTL text rendering
-6. Test change tracking and reporting
-
-### Monitoring
-
-- Use Vercel's built-in monitoring
-- Check function execution logs
-- Monitor API rate limits
-- Watch for memory usage
-
-### Troubleshooting
-
-- Check Vercel function logs for errors
-- Verify environment variables
-- Check file upload size limits
-- Monitor Gemini API quotas
+Modern invoice processing application that uses Google's Gemini Vision AI to extract and edit invoice data, with support for Hebrew RTL invoices.
 
 ## Features
 
-- Upload and process PNG and JPG invoices
-- Automatic text extraction using Gemini Vision AI
-- Real-time invoice editing with automatic calculations
-- RTL support for Hebrew text
-- Change tracking and detailed reporting
-- Print-friendly output
+- PDF, Image (PNG, JPG) invoice processing
+- Hebrew (RTL) invoice support
+- Real-time invoice editing
+- Change tracking and comparison
+- PDF and Excel report generation
+- Mobile-responsive design
 
-## Local Development
+## Tech Stack
+
+- Backend: Flask + Gemini Vision AI
+- Frontend: HTML5, CSS3, JavaScript
+- Database: File-based storage
+- Deployment: Firebase Hosting + Cloud Functions
+
+## Local Development Setup
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/yourusername/invoice-processor.git
-   cd invoice-processor
-   ```
+```bash
+git clone [repository-url]
+cd invoice-processing-app
+```
 
 2. Create and activate virtual environment:
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
 3. Install dependencies:
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+pip install -r requirements.txt
+```
 
 4. Set up environment variables:
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your values
-   ```
+```bash
+cp .env.example .env
+# Edit .env with your GOOGLE_API_KEY and other settings
+```
 
-5. Run development server:
-   ```bash
-   python app.py
-   ```
+5. Run the development server:
 
-## Security Considerations
+```bash
+python app.py
+```
 
-- API keys are stored securely in environment variables
-- File uploads are validated and sanitized
-- Temporary files are cleaned up after processing
-- CORS settings are configured for security
-- Memory limits are set to prevent abuse
+## Deployment
 
-## Maintenance
+### Firebase Deployment
 
-1. Regular Updates
+1. Install Firebase CLI:
 
-   - Check for package updates
-   - Monitor Gemini API version changes
-   - Update security patches
+```bash
+npm install -g firebase-tools
+```
 
-2. Backup
+2. Login to Firebase:
 
-   - Regular database backups (if added)
-   - Configuration backups
-   - Environment variable documentation
+```bash
+firebase login
+```
 
-3. Monitoring
-   - Set up alerts for errors
-   - Monitor API usage
-   - Track performance metrics
+3. Initialize Firebase project:
+
+```bash
+firebase init
+```
+
+4. Deploy:
+
+```bash
+firebase deploy
+```
+
+## Project Structure
+
+```
+.
+├── app.py                 # Main Flask application
+├── requirements.txt       # Python dependencies
+├── static/               # Static assets
+│   ├── css/             # Stylesheets
+│   ├── js/              # JavaScript files
+│   └── fonts/           # Custom fonts
+├── templates/            # HTML templates
+├── uploads/             # Temporary file storage
+└── functions/           # Firebase Cloud Functions
+```
+
+## Environment Variables
+
+Required in .env file:
+
+```
+GOOGLE_API_KEY=your-gemini-api-key
+FLASK_ENV=development
+FLASK_APP=app.py
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 

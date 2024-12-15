@@ -7,46 +7,64 @@ __pycache__/
 venv/
 ENV/
 env/
-*.env
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
 .env
-app.log
+.env.local
+.env.*.local
+*.env
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Firebase
+.firebase/
+firebase-debug.log
+ui-debug.log
+*firebase-adminsdk*.json
+service-account*.json
+client_secret*.json
 
-# IDEs and editors
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# OS
 .DS_Store
+Thumbs.db
 
-# Build and dist
-dist/
-build/
-*.egg-info/
+# Application specific
+uploads/*
+!uploads/.gitkeep
+processed/
+temp/
+*.log
 
-# Deployment specific
+# Credentials and secrets
+*secret*.json
+*key*.json
+*credentials*.json
+*config*.json
+!firebase-config.js
+!example-config.json
+
+# Build and deployment
 .vercel/
-.firebase/
 .gcloud/
-uploads/
 *.pyc
 .coverage
 htmlcov/
-
-# Sensitive files
-service-account-key.json
-client_secret*.json
-*secret*.json
-
-# Keep example files
-!.env.example
-
-# Logs and databases
-*.log
-*.sqlite3
-*.db
