@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov
+.DS_Store
+uploads/*
+!uploads/.gitkeep
+static/processed_*
+.vercel/lib/*.so.*
+!.vercel/lib/libjpeg.so.62
+!.vercel/lib/libturbojpeg.so.0 

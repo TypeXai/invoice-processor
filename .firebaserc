@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "invoice-processor-app"
+  },
+  "targets": {
+    "invoice-processor-app": {
+      "hosting": {
+        "invoice-processor": [
+          "invoice-processor-app"
+        ]
+      }
+    }
+  }
+}

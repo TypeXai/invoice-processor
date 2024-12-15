@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מערכת עיבוד חשבוניות</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+      }
+      .upload-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+      .upload-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 3rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .upload-zone:hover {
+        border-color: #0d6efd;
+        background-color: #f8f9fa;
+      }
+      .upload-zone.highlight {
+        border-color: #0d6efd;
+        background-color: #e9ecef;
+      }
+      .loading-spinner {
+        display: none;
+        margin: 2rem auto;
+      }
+      .loading-spinner.show {
+        display: block;
+      }
+      .invoice-data {
+        display: none;
+        margin-top: 2rem;
+      }
+      .invoice-data.show {
+        display: block;
+      }
+      .editable {
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out;
+      }
+      .editable:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+      }
+      .highlight-changes {
+        background-color: #fff3cd;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .rotating {
+        animation: spin 1s linear infinite;
+      }
+      .step {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .step.active {
+        border: 2px solid #0d6efd;
+      }
+      .step.completed {
+        border: 2px solid #198754;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="upload-container">
+        <h1 class="text-center mb-4">מערכת עיבוד חשבוניות</h1>
+
+        <!-- Step 1: Upload -->
+        <div class="step mb-4" id="step1">
+          <h3><i class="bi bi-1-circle"></i> העלאת חשבונית</h3>
+          <div class="upload-zone" id="upload-zone">
+            <i class="bi bi-cloud-upload fs-1 mb-3"></i>
+            <p>גרור קובץ לכאן או לחץ לבחירת קובץ</p>
+            <input
+              type="file"
+              id="file-input"
+              class="d-none"
+              accept=".pdf,.png,.jpg,.jpeg"
+            />
+          </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner text-center">
+          <i class="bi bi-arrow-repeat fs-1 rotating"></i>
+          <p>מעבד את החשבונית...</p>
+        </div>
+
+        <!-- Step 2: Review -->
+        <div class="step mb-4" id="step2" style="display: none">
+          <h3><i class="bi bi-2-circle"></i> בדיקת נתונים</h3>
+          <div class="invoice-data">
+            <div class="company-details mb-4">
+              <h4>פרטי החברה</h4>
+              <div class="row">
+                <div class="col-md-4">
+                  <label>שם החברה:</label>
+                  <div
+                    class="editable"
+                    contenteditable="true"
+                    data-field="company_name"
+                  ></div>
+                </div>
+                <div class="col-md-4">
+                  <label>כתובת:</label>
+                  <div
+                    class="editable"
+                    contenteditable="true"
+                    data-field="address"
+                  ></div>
+                </div>
+                <div class="col-md-4">
+                  <label>ח.פ.:</label>
+                  <div
+                    class="editable"
+                    contenteditable="true"
+                    data-field="tax_id"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="invoice-details mb-4">
+              <h4>פרטי חשבונית</h4>
+              <div class="row">
+                <div class="col-md-6">
+                  <label>מספר חשבונית:</label>
+                  <div
+                    class="editable"
+                    contenteditable="true"
+                    data-field="invoice_number"
+                  ></div>
+                </div>
+                <div class="col-md-6">
+                  <label>תאריך:</label>
+                  <div
+                    class="editable"
+                    contenteditable="true"
+                    data-field="date"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="line-items mb-4">
+              <h4>פריטים</h4>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>מק"ט</th>
+                      <th>תיאור</th>
+                      <th>כמות</th>
+                      <th>מחיר יחידה</th>
+                      <th>סה"כ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="line-items-body">
+                    <!-- Line items will be inserted here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="totals">
+              <div class="row justify-content-end">
+                <div class="col-md-4">
+                  <table class="table">
+                    <tr>
+                      <td>סה"כ לפני מע"מ:</td>
+                      <td class="text-end" id="subtotal"></td>
+                    </tr>
+                    <tr>
+                      <td>מע"מ (17%):</td>
+                      <td class="text-end" id="tax"></td>
+                    </tr>
+                    <tr class="fw-bold">
+                      <td>סה"כ כולל מע"מ:</td>
+                      <td class="text-end" id="total"></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Actions -->
+        <div class="step mb-4" id="step3" style="display: none">
+          <h3><i class="bi bi-3-circle"></i> פעולות</h3>
+          <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-primary" id="save-changes">
+              <i class="bi bi-save"></i> שמור שינויים
+            </button>
+            <button class="btn btn-success" id="generate-report">
+              <i class="bi bi-file-earmark-text"></i> הפק דו"ח
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let originalValues = null;
+      let currentValues = null;
+
+      // File Upload Handling
+      const uploadZone = document.getElementById("upload-zone");
+      const fileInput = document.getElementById("file-input");
+      const loadingSpinner = document.querySelector(".loading-spinner");
+      const step1 = document.getElementById("step1");
+      const step2 = document.getElementById("step2");
+      const step3 = document.getElementById("step3");
+
+      // Helper Functions
+      function formatNumber(num) {
+        if (typeof num === "string") {
+          num = parseFloat(num.replace(/[^\d.-]/g, ""));
+        }
+        return isNaN(num) ? "0.00" : num.toFixed(2);
+      }
+
+      function highlightChanges(orig, curr) {
+        // Convert to numbers if they're numeric strings
+        const origNum = typeof orig === "string" ? parseFloat(orig) : orig;
+        const currNum = typeof curr === "string" ? parseFloat(curr) : curr;
+
+        // Check if both values are numbers
+        if (!isNaN(origNum) && !isNaN(currNum)) {
+          if (Math.abs(origNum - currNum) > 0.001) {
+            return `
+              <div class="d-flex flex-column">
+                <del class="text-danger small">${formatNumber(origNum)}</del>
+                <span class="text-success fw-bold">${formatNumber(
+                  currNum
+                )}</span>
+              </div>
+            `;
+          }
+          return formatNumber(currNum);
+        }
+
+        // Handle text values
+        if (orig !== curr) {
+          return `
+            <div class="d-flex flex-column">
+              <del class="text-danger small">${orig || ""}</del>
+              <span class="text-success fw-bold">${curr || ""}</span>
+            </div>
+          `;
+        }
+        return curr || "";
+      }
+
+      function updateLineItems(items) {
+        const tbody = document.getElementById("line-items-body");
+        tbody.innerHTML = "";
+
+        items.forEach((item, index) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="editable" contenteditable="true" data-field="item_code" data-index="${index}">${
+            item.item_code || ""
+          }</td>
+            <td class="editable" contenteditable="true" data-field="description" data-index="${index}">${
+            item.description || ""
+          }</td>
+            <td class="editable" contenteditable="true" data-field="quantity" data-index="${index}">${formatNumber(
+            item.quantity
+          )}</td>
+            <td class="editable" contenteditable="true" data-field="price" data-index="${index}">${formatNumber(
+            item.price
+          )}</td>
+            <td>${formatNumber(item.total)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function updateTotals(totals) {
+        if (!totals) totals = { subtotal: 0, tax: 0, total: 0 };
+
+        document.getElementById("subtotal").textContent = formatNumber(
+          totals.subtotal
+        );
+        document.getElementById("tax").textContent = formatNumber(totals.tax);
+        document.getElementById("total").textContent = formatNumber(
+          totals.total
+        );
+      }
+
+      function handleInvoiceData(data) {
+        // Store original and current values as deep copies
+        originalValues = JSON.parse(JSON.stringify(data));
+        currentValues = JSON.parse(JSON.stringify(data));
+
+        // Update company details
+        if (data.company_details) {
+          document.querySelector('[data-field="company_name"]').textContent =
+            data.company_details.name || "";
+          document.querySelector('[data-field="address"]').textContent =
+            data.company_details.address || "";
+          document.querySelector('[data-field="tax_id"]').textContent =
+            data.company_details.tax_id || "";
+        }
+
+        // Update invoice details
+        if (data.invoice_details) {
+          document.querySelector('[data-field="invoice_number"]').textContent =
+            data.invoice_details.invoice_number || "";
+          document.querySelector('[data-field="date"]').textContent =
+            data.invoice_details.date || "";
+        }
+
+        // Update line items and totals
+        updateLineItems(data.line_items || []);
+        updateTotals(data.totals);
+
+        // Show the data sections
+        document.querySelector(".invoice-data").classList.add("show");
+        step2.style.display = "block";
+        step3.style.display = "block";
+        step1.classList.add("completed");
+        step2.classList.add("active");
+      }
+
+      // Event Listeners
+      uploadZone.addEventListener("click", () => fileInput.click());
+
+      uploadZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadZone.classList.add("highlight");
+      });
+
+      uploadZone.addEventListener("dragleave", () => {
+        uploadZone.classList.remove("highlight");
+      });
+
+      uploadZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove("highlight");
+        const file = e.dataTransfer.files[0];
+        if (file) processFile(file);
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) processFile(file);
+      });
+
+      // Event listener for editable fields
+      document.addEventListener("input", function (e) {
+        if (!e.target.classList.contains("editable")) return;
+
+        const field = e.target.dataset.field;
+        const index = e.target.dataset.index;
+        let value = e.target.textContent.trim();
+
+        // Track changes immediately
+        if (index !== undefined && currentValues.line_items[index]) {
+          const originalItem = originalValues.line_items[index];
+          const currentItem = currentValues.line_items[index];
+
+          if (field === "quantity" || field === "price") {
+            value = parseFloat(value.replace(/[^\d.]/g, "") || 0);
+            e.target.textContent = formatNumber(value);
+            currentItem[field] = value;
+
+            // Recalculate total
+            currentItem.total = currentItem.quantity * currentItem.price;
+            const totalCell =
+              e.target.parentElement.querySelector("td:nth-child(5)");
+            if (totalCell) {
+              totalCell.textContent = formatNumber(currentItem.total);
+            }
+
+            // Highlight changes immediately
+            const isChanged =
+              Math.abs(originalItem[field] - currentItem[field]) > 0.001;
+            if (isChanged) {
+              e.target.classList.add("highlight-changes");
+              e.target.parentElement.classList.add("table-warning");
+            } else {
+              e.target.classList.remove("highlight-changes");
+              if (
+                !Object.keys(currentItem).some(
+                  (key) =>
+                    Math.abs(originalItem[key] - currentItem[key]) > 0.001
+                )
+              ) {
+                e.target.parentElement.classList.remove("table-warning");
+              }
+            }
+
+            // Highlight total cell if changed
+            if (Math.abs(originalItem.total - currentItem.total) > 0.001) {
+              totalCell.classList.add("highlight-changes");
+            } else {
+              totalCell.classList.remove("highlight-changes");
+            }
+
+            // Recalculate totals
+            const subtotal = currentValues.line_items.reduce(
+              (sum, item) => sum + item.quantity * item.price,
+              0
+            );
+            const tax = subtotal * 0.17;
+            const total = subtotal + tax;
+
+            currentValues.totals = {
+              subtotal: subtotal,
+              tax: tax,
+              total: total,
+            };
+
+            // Update totals display
+            updateTotals(currentValues.totals);
+
+            // Enable save button
+            const hasChanges =
+              JSON.stringify(originalValues) !== JSON.stringify(currentValues);
+            document.getElementById("save-changes").disabled = !hasChanges;
+          }
+        }
+      });
+
+      // Save Changes
+      document.getElementById("save-changes").addEventListener("click", () => {
+        fetch("/save_changes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(currentValues),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              alert("Changes saved successfully!");
+              document.querySelectorAll(".highlight-changes").forEach((el) => {
+                el.classList.remove("highlight-changes");
+              });
+              document.querySelectorAll(".table-warning").forEach((el) => {
+                el.classList.remove("table-warning");
+              });
+            } else {
+              throw new Error(data.error || "Failed to save changes");
+            }
+          })
+          .catch((error) => {
+            alert("Error: " + error.message);
+          });
+      });
+
+      // Generate Report
+      document
+        .getElementById("generate-report")
+        .addEventListener("click", async () => {
+          try {
+            if (!originalValues || !currentValues) {
+              alert("Error: Missing data for comparison");
+              return;
+            }
+
+            // Ensure required data structures exist
+            if (
+              !originalValues.line_items ||
+              !currentValues.line_items ||
+              !originalValues.totals ||
+              !currentValues.totals
+            ) {
+              alert("Error: Invalid data structure");
+              return;
+            }
+
+            // Track changes
+            let changes = [];
+            let changesByItem = {};
+
+            // Helper function to compare numbers with precision
+            const isNumberDifferent = (a, b) => {
+              const numA = parseFloat(a);
+              const numB = parseFloat(b);
+              return (
+                !isNaN(numA) && !isNaN(numB) && Math.abs(numA - numB) > 0.001
+              );
+            };
+
+            // Compare line items
+            originalValues.line_items.forEach((orig, idx) => {
+              const curr = currentValues.line_items[idx];
+              if (!curr) return;
+
+              let itemChanges = [];
+
+              // Compare each field
+              ["quantity", "price", "total"].forEach((field) => {
+                if (orig[field] === undefined || curr[field] === undefined)
+                  return;
+
+                const origValue = parseFloat(orig[field]);
+                const currValue = parseFloat(curr[field]);
+
+                if (isNumberDifferent(origValue, currValue)) {
+                  itemChanges.push({
+                    field,
+                    original: origValue,
+                    current: currValue,
+                    difference: currValue - origValue,
+                  });
+                }
+              });
+
+              if (itemChanges.length > 0) {
+                changesByItem[idx] = itemChanges;
+                changes.push({
+                  type: "line_item",
+                  index: idx,
+                  description: curr.description || "",
+                  changes: itemChanges,
+                });
+              }
+            });
+
+            // Compare totals
+            ["subtotal", "tax", "total"].forEach((field) => {
+              if (
+                originalValues.totals[field] === undefined ||
+                currentValues.totals[field] === undefined
+              )
+                return;
+
+              const origValue = parseFloat(originalValues.totals[field]);
+              const currValue = parseFloat(currentValues.totals[field]);
+
+              if (isNumberDifferent(origValue, currValue)) {
+                changes.push({
+                  type: "total",
+                  field,
+                  original: origValue,
+                  current: currValue,
+                  difference: currValue - origValue,
+                });
+              }
+            });
+
+            // Prepare report data
+            const reportData = {
+              original_values: originalValues,
+              current_values: currentValues,
+              changes: changes,
+              changes_by_item: changesByItem,
+            };
+
+            // Generate the report
+            const response = await fetch("/generate_report", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(reportData),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Server error: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log("Report response:", data); // Debug log
+
+            if (data.status === "success" && data.report) {
+              const report = data.report;
+
+              // Validate report structure
+              if (
+                !report.line_items?.current ||
+                !report.line_items?.original ||
+                !report.totals?.current ||
+                !report.totals?.original
+              ) {
+                throw new Error(
+                  "Invalid report structure received from server"
+                );
+              }
+
+              // Create modal content
+              const modalContent = createModalContent(report);
+
+              // Create and show modal
+              let reportModal = document.getElementById("reportModal");
+              if (reportModal) {
+                // If modal exists, destroy the old instance
+                const oldModal = bootstrap.Modal.getInstance(reportModal);
+                if (oldModal) {
+                  oldModal.dispose();
+                }
+                reportModal.remove();
+              }
+
+              // Create new modal
+              reportModal = document.createElement("div");
+              reportModal.id = "reportModal";
+              reportModal.className = "modal fade";
+              reportModal.setAttribute("tabindex", "-1");
+              reportModal.setAttribute("role", "dialog");
+              reportModal.setAttribute("aria-labelledby", "reportModalLabel");
+              reportModal.setAttribute("aria-hidden", "true");
+              reportModal.innerHTML = modalContent;
+              document.body.appendChild(reportModal);
+
+              // Initialize new modal
+              const modal = new bootstrap.Modal(reportModal, {
+                keyboard: true,
+                backdrop: true,
+                focus: true,
+              });
+
+              // Show modal after a short delay to ensure proper initialization
+              setTimeout(() => {
+                modal.show();
+              }, 100);
+            } else {
+              throw new Error(data.error || "Failed to generate report");
+            }
+          } catch (error) {
+            console.error("Report generation error:", error);
+            alert("Error generating report: " + error.message);
+          }
+        });
+
+      // Helper function to create modal content
+      function createModalContent(report) {
+        // Create detailed changes notes
+        const changesNotes = (report.changes || [])
+          .map((change) => {
+            if (!change?.type) return "";
+
+            switch (change.type) {
+              case "line_item":
+                if (!Array.isArray(change.changes)) return "";
+
+                const changeDetails = change.changes
+                  .map((c) => {
+                    if (!c?.field) return "";
+                    const orig = formatNumber(c.original);
+                    const curr = formatNumber(c.current);
+                    const fieldName = {
+                      quantity: "כמות",
+                      price: "מחיר",
+                      total: 'סה"כ',
+                    }[c.field];
+                    return `${fieldName}: מ-${orig} ל-${curr}`;
+                  })
+                  .filter(Boolean)
+                  .join(", ");
+                return `שינוי בפריט "${
+                  change.description || ""
+                }": ${changeDetails}`;
+
+              case "total":
+                if (!change.field) return "";
+                const fieldName = {
+                  subtotal: 'סה"כ לפני מע"מ',
+                  tax: 'מע"מ',
+                  total: 'סה"כ כולל מע"מ',
+                }[change.field];
+                return `שינוי ב${fieldName}: מ-${formatNumber(
+                  change.original
+                )} ל-${formatNumber(change.current)} (הפרש: ${formatNumber(
+                  change.difference
+                )})`;
+              default:
+                return "";
+            }
+          })
+          .filter(Boolean);
+
+        return `
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">דו"ח שינויים בחשבונית</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <!-- Status Banner -->
+                ${
+                  changesNotes.length > 0
+                    ? `<div class="alert alert-warning">
+                      <strong>נמצאו ${
+                        changesNotes.length
+                      } שינויים בחשבונית</strong>
+                    </div>
+                    <div class="changes-notes mb-4">
+                      <h6>פירוט השינויים:</h6>
+                      <div class="alert alert-info">
+                        <ul class="list-unstyled mb-0">
+                          ${changesNotes
+                            .map((note) => `<li>• ${note}</li>`)
+                            .join("")}
+                        </ul>
+                      </div>
+                    </div>`
+                    : `<div class="alert alert-info">לא נמצאו שינויים בחשבונית</div>`
+                }
+                
+                <!-- Full Invoice Comparison -->
+                <div class="invoice-comparison mt-4">
+                  <h6>השוואת פריטים</h6>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>מק"ט</th>
+                          <th>תיאור</th>
+                          <th>כמות</th>
+                          <th>מחיר</th>
+                          <th>סה"כ</th>
+                          <th>סטטוס</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${report.line_items.current
+                          .map((curr, idx) => {
+                            if (!curr) return "";
+
+                            const orig = report.line_items.original[idx] || {};
+                            const itemChanges =
+                              report.changes_by_item[idx] || [];
+                            const hasChanges = itemChanges.length > 0;
+
+                            const highlightCell = (field) => {
+                              if (!field) return "";
+                              const change = itemChanges.find(
+                                (c) => c?.field === field
+                              );
+                              if (!change)
+                                return formatNumber(curr[field] || 0);
+
+                              return `
+                                <div class="d-flex flex-column">
+                                  <del class="text-danger small">${formatNumber(
+                                    change.original || 0
+                                  )}</del>
+                                  <span class="text-success fw-bold">${formatNumber(
+                                    change.current || 0
+                                  )}</span>
+                                </div>
+                              `;
+                            };
+
+                            return `
+                              <tr class="${hasChanges ? "table-warning" : ""}">
+                                <td>${curr.item_code || ""}</td>
+                                <td>${curr.description || ""}</td>
+                                <td>${highlightCell("quantity")}</td>
+                                <td>${highlightCell("price")}</td>
+                                <td>${highlightCell("total")}</td>
+                                <td class="text-center">
+                                  ${
+                                    hasChanges
+                                      ? `<span class="badge bg-warning">
+                                         <i class="bi bi-pencil-square"></i>
+                                         שונה
+                                       </span>`
+                                      : `<span class="badge bg-success">
+                                         <i class="bi bi-check-circle"></i>
+                                         ללא שינוי
+                                       </span>`
+                                  }
+                                </td>
+                              </tr>
+                            `;
+                          })
+                          .filter(Boolean)
+                          .join("")}
+                      </tbody>
+                      <tfoot class="${
+                        (report.changes || []).some((c) => c?.type === "total")
+                          ? "table-warning"
+                          : ""
+                      }">
+                        <tr>
+                          <td colspan="4" class="text-end fw-bold">סה"כ לפני מע"מ:</td>
+                          <td colspan="2">${highlightChanges(
+                            report.totals.original.subtotal || 0,
+                            report.totals.current.subtotal || 0
+                          )}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="4" class="text-end fw-bold">מע"מ (17%):</td>
+                          <td colspan="2">${highlightChanges(
+                            report.totals.original.tax || 0,
+                            report.totals.current.tax || 0
+                          )}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="4" class="text-end fw-bold">סה"כ כולל מע"מ:</td>
+                          <td colspan="2">${highlightChanges(
+                            report.totals.original.total || 0,
+                            report.totals.current.total || 0
+                          )}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                  <i class="bi bi-printer"></i> הדפס דו"ח
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">סגור</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Add CSS for better change highlighting
+      const style = document.createElement("style");
+      style.textContent = `
+        .highlight-changes {
+          background-color: #fff3cd !important;
+          position: relative;
+        }
+        .highlight-changes::after {
+          content: "⚠️";
+          position: absolute;
+          right: -20px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 12px;
+        }
+        .table-warning td {
+          background-color: #fff3cd !important;
+        }
+        .table-warning:hover td {
+          background-color: #ffe69c !important;
+        }
+        .editable.highlight-changes {
+          border: 1px solid #ffc107;
+          border-radius: 4px;
+          padding: 2px 4px;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Process File Function
+      async function processFile(file) {
+        if (!file) return;
+
+        // Show loading state
+        loadingSpinner.classList.add("show");
+        step1.classList.add("active");
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            console.error("Non-JSON response:", await response.text());
+            throw new Error("Server response was not JSON");
+          }
+
+          const result = await response.json();
+          console.log("Server response:", result);
+
+          if (!result) {
+            throw new Error("Empty response from server");
+          }
+
+          if (result.status === "error") {
+            throw new Error(result.error || "Unknown error occurred");
+          }
+
+          if (result.status === "success" && result.invoice_data) {
+            // Hide loading spinner
+            loadingSpinner.classList.remove("show");
+
+            // Process and display the data
+            handleInvoiceData(result.invoice_data);
+          } else {
+            throw new Error("Invalid response format from server");
+          }
+        } catch (error) {
+          console.error("Error details:", error);
+          loadingSpinner.classList.remove("show");
+
+          // Create a more user-friendly error message
+          let errorMessage = "Error processing invoice: ";
+          if (error.message.includes("JSON")) {
+            errorMessage += "Server response format error";
+            console.error("Response was not JSON");
+          } else if (error.message.includes("Failed to fetch")) {
+            errorMessage += "Network error - please check your connection";
+          } else {
+            errorMessage += error.message;
+          }
+
+          alert(errorMessage);
+
+          // Reset the file input
+          fileInput.value = "";
+        }
+      }
+    </script>
+  </body>
+</html>

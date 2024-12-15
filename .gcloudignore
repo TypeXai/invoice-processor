@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.*
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+logs/
+*.log
+.DS_Store
+node_modules/
+.firebase/
+firebase-debug.log 

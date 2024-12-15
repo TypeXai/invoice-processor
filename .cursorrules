@@ -1,0 +1,179 @@
+# Gemini Vision Invoice Processing Application Rules
+
+# ===========================================
+
+# Project Structure
+
+# ----------------
+
+root/
+├── app.py # Main Flask application
+├── static/ # Static assets
+│ ├── css/ # Stylesheets
+│ ├── js/ # JavaScript files
+│ └── img/ # Image assets
+├── templates/ # HTML templates
+├── vercel.json # Vercel deployment config
+├── requirements.txt # Python dependencies
+└── .env # Environment variables
+
+# Code Style Rules
+
+# ---------------
+
+[python]
+max_line_length = 100
+indent_style = space
+indent_size = 4
+quote_type = single
+docstring_style = google
+
+[javascript]
+indent_style = space
+indent_size = 2
+quote_type = single
+semicolons = true
+
+# Performance Rules
+
+# ---------------
+
+[image_processing]
+max_file_size = 5MB
+max_dimensions = 600x600
+image_quality = 70
+allowed_formats = [jpg, jpeg, png]
+
+[api_timeouts]
+gemini_timeout = 25
+total_request_timeout = 30
+max_retries = 3
+
+# Memory Management
+
+# ---------------
+
+[memory_limits]
+vercel_lambda = 3008MB
+max_upload_size = 6MB
+max_response_size = 10MB
+
+# Error Handling
+
+# -------------
+
+[error_handling]
+log_level = INFO
+capture_stack_traces = true
+sanitize_error_messages = true
+
+# RTL Processing Rules
+
+# ------------------
+
+[rtl_processing]
+column_order = [description, quantity, unit_price, total]
+tax_rate = 17%
+decimal_precision = 2
+validate_calculations = true
+
+# Security Rules
+
+# -------------
+
+[security]
+cors_enabled = true
+api_key_required = true
+sanitize_inputs = true
+max_content_length = 6MB
+
+# Deployment Rules
+
+# --------------
+
+[vercel_deployment]
+python_version = 3.9
+node_version = 18.x
+max_duration = 60
+regions = [iad1]
+
+# Testing Requirements
+
+# ------------------
+
+[testing]
+unit_tests_required = true
+rtl_test_cases = true
+performance_benchmarks = true
+error_scenarios = true
+
+# Documentation Rules
+
+# -----------------
+
+[documentation]
+api_docs_required = true
+code_comments_required = true
+changelog_required = true
+readme_updates = true
+
+# Optimization Rules
+
+# ----------------
+
+[optimization]
+minify_js = true
+compress_images = true
+cache_headers = true
+lazy_loading = true
+
+# Validation Rules
+
+# --------------
+
+[validation]
+validate_json = true
+validate_calculations = true
+validate_file_types = true
+validate_memory_usage = true
+
+# Monitoring Rules
+
+# --------------
+
+[monitoring]
+log_api_calls = true
+track_performance = true
+measure_timeouts = true
+track_errors = true
+
+# UI/UX Rules
+
+# ----------
+
+[ui_ux]
+loading_indicators = true
+error_feedback = true
+responsive_design = true
+rtl_support = true
+
+# Build Rules
+
+# ----------
+
+[build]
+clean_build = true
+production_mode = true
+source_maps = false
+optimization_level = 2
+
+# Environment Rules
+
+# ---------------
+
+[environment]
+required_vars = [
+GOOGLE_API_KEY
+]
+development_mode = false
+debug_mode = false

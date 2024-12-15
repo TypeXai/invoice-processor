@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: gemini-invoice-processor
+    env: python
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: FIREBASE_API_KEY
+        sync: false
+      - key: MAX_FILE_SIZE
+        value: 16777216
+      - key: ALLOWED_EXTENSIONS
+        value: png,jpg,jpeg
+      - key: MAX_CONTENT_LENGTH
+        value: 6291456
+      - key: GEMINI_TIMEOUT
+        value: 30
+      - key: TOTAL_REQUEST_TIMEOUT
+        value: 35
+      - key: FLASK_ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: https://invoice-processor-app.web.app,https://invoice-processor-app.firebaseapp.com
+    healthCheckPath: /health
+    autoDeploy: true
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 75
+    plan: starter

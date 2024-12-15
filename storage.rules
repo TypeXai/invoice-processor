@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /invoices/{fileName} {
+      // Allow public read and write for invoice images
+      allow read: if true;
+      allow write: if request.resource.size < 6 * 1024 * 1024  // 6MB max
+                   && request.resource.contentType.matches('image/.*')
+                   && request.resource.contentType.matches('image/(jpeg|png|jpg)')
+                   && fileName.matches('^[0-9]+_.*\\.(jpg|jpeg|png)$');
+    }
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+} 

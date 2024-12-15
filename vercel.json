@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9",
+        "maxDuration": 30,
+        "memory": 3008,
+        "regions": ["iad1"],
+        "functions": {
+          "api/*.py": {
+            "memory": 3008,
+            "maxDuration": 30
+          }
+        }
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/.*",
+      "headers": {
+        "Cache-Control": "s-maxage=0, stale-while-revalidate=60",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Accept",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "continue": true
+    },
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "env": {
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONPATH": ".",
+    "MAX_CONTENT_LENGTH": "6291456",
+    "GEMINI_TIMEOUT": "25",
+    "TOTAL_REQUEST_TIMEOUT": "30"
+  }
+}
